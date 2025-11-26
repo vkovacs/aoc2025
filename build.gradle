@@ -3,6 +3,7 @@ plugins {
     id("io.freefair.lombok") version "9.1.0"
 }
 
+ext.aocPackage = "hu.crs.aoc2025"
 apply from: "gradle/create-aoc-day.gradle"
 
 group = 'hu.crs'
@@ -21,5 +22,3 @@ dependencies {
 test {
     useJUnitPlatform()
 }
-
-

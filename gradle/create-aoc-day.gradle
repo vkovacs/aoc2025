@@ -1,12 +1,13 @@
-def aocPackage = "hu.crs.aoc2025"
+def aocPackage = project.hasProperty("aocPackage") ? project.property("aocPackage") : project.ext.has("aocPackage") ? project.ext.aocPackage : "default.package"
 
-tasks.register("createAocDay") {
+
+tasks.register("createAocDayTask") {
     group = "aoc"
     description = "Creates boilerplate source + resource files for AoC"
 
     doLast {
         if (!project.hasProperty("day")) {
-            throw new GradleException("Usage: ./gradlew createAocDay -Pday=3")
+            throw new GradleException("Usage: ./gradlew createAocDay -Pday=1")
         }
 
         def day = project.property("day").toString().padLeft(2, '0')
