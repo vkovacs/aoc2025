@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id("io.freefair.lombok") version "9.1.0"
 }
 
 group = 'hu.crs'
@@ -19,7 +20,7 @@ test {
     useJUnitPlatform()
 }
 
-def aocPackage = "hu.crs.aoc_2025"
+def aocPackage = "hu.crs.aoc2025"
 
 tasks.register("createAocDay") {
     group = "aoc"
@@ -31,7 +32,6 @@ tasks.register("createAocDay") {
         }
 
         def day = project.property("day").toString().padLeft(2, '0')
-
         def pkgPath = aocPackage.replace('.', '/')
 
         def mainJavaDir = layout.projectDirectory.dir("src/main/java/${pkgPath}/day${day}").asFile
@@ -44,55 +44,89 @@ tasks.register("createAocDay") {
         mainResDir.mkdirs()
         testResDir.mkdirs()
 
+        // -------- Solution file --------
         def logicFile = new File(mainJavaDir, "Day${day}Solution.java")
         if (!logicFile.exists()) {
             logicFile.text = """
 package ${aocPackage}.day${day};
 
+import java.util.List;
+
 public class Day${day}Solution {
 
-    public String part1(String input) {
+    public String part1(List<String> lines) {
         return "";
     }
 
-    public String part2(String input) {
+    public String part2(List<String> lines) {
         return "";
     }
 }
 """.trim()
         }
 
+        // -------- Test file --------
         def testFile = new File(testJavaDir, "Day${day}SolutionTest.java")
         if (!testFile.exists()) {
             testFile.text = """
 package ${aocPackage}.day${day};
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class Day${day}SolutionTest {
 
     @Test
     void testPart1() {
         var solution = new Day${day}Solution();
-        var input = new String(getClass().getResourceAsStream("/day${day}/input-test.txt").readAllBytes());
-        assertEquals("", solution.part1(input));
+        var lines = readLines("/day${day}/input-test.txt");
+        assertEquals("", solution.part1(lines));
     }
 
     @Test
     void testPart2() {
         var solution = new Day${day}Solution();
-        var input = new String(getClass().getResourceAsStream("/day${day}/input-test.txt").readAllBytes());
-        assertEquals("", solution.part2(input));
+        var lines = readLines("/day${day}/input-test.txt");
+        assertEquals("", solution.part2(lines));
+    }
+
+    @Test
+    void testPart1_withRealInput() {
+        var solution = new Day${day}Solution();
+        var lines = readLines("/day${day}/input.txt");
+        assertEquals("", solution.part1(lines));  // fill when solution known
+    }
+
+    @Test
+    void testPart2_withRealInput() {
+        var solution = new Day${day}Solution();
+        var lines = readLines("/day${day}/input.txt");
+        assertEquals("", solution.part2(lines));  // fill when solution known
+    }
+    
+    @SneakyThrows
+    private List<String> readLines(String resourceName) {
+        var uri = Objects.requireNonNull(getClass().getResource(resourceName)).toURI();
+        return Files.readAllLines(Path.of(uri));
     }
 }
 """.trim()
         }
 
+        // -------- Resource files --------
         new File(mainResDir, "input.txt").createNewFile()
         new File(testResDir, "input-test.txt").createNewFile()
 
         println "AoC day ${day} scaffolding generated."
     }
 }
+
+
 
