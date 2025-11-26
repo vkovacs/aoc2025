@@ -1,0 +1,98 @@
+plugins {
+    id 'java'
+}
+
+group = 'hu.crs'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+def aocPackage = "hu.crs.aoc_2025"
+
+tasks.register("createAocDay") {
+    group = "aoc"
+    description = "Creates boilerplate source + resource files for AoC"
+
+    doLast {
+        if (!project.hasProperty("day")) {
+            throw new GradleException("Usage: ./gradlew createAocDay -Pday=3")
+        }
+
+        def day = project.property("day").toString().padLeft(2, '0')
+
+        def pkgPath = aocPackage.replace('.', '/')
+
+        def mainJavaDir = layout.projectDirectory.dir("src/main/java/${pkgPath}/day${day}").asFile
+        def testJavaDir = layout.projectDirectory.dir("src/test/java/${pkgPath}/day${day}").asFile
+        def mainResDir = layout.projectDirectory.dir("src/main/resources/day${day}").asFile
+        def testResDir = layout.projectDirectory.dir("src/test/resources/day${day}").asFile
+
+        mainJavaDir.mkdirs()
+        testJavaDir.mkdirs()
+        mainResDir.mkdirs()
+        testResDir.mkdirs()
+
+        def logicFile = new File(mainJavaDir, "Day${day}Solution.java")
+        if (!logicFile.exists()) {
+            logicFile.text = """
+package ${aocPackage}.day${day};
+
+public class Day${day}Solution {
+
+    public String part1(String input) {
+        return "";
+    }
+
+    public String part2(String input) {
+        return "";
+    }
+}
+""".trim()
+        }
+
+        def testFile = new File(testJavaDir, "Day${day}SolutionTest.java")
+        if (!testFile.exists()) {
+            testFile.text = """
+package ${aocPackage}.day${day};
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+class Day${day}SolutionTest {
+
+    @Test
+    void testPart1() {
+        var solution = new Day${day}Solution();
+        var input = new String(getClass().getResourceAsStream("/day${day}/input-test.txt").readAllBytes());
+        assertEquals("", solution.part1(input));
+    }
+
+    @Test
+    void testPart2() {
+        var solution = new Day${day}Solution();
+        var input = new String(getClass().getResourceAsStream("/day${day}/input-test.txt").readAllBytes());
+        assertEquals("", solution.part2(input));
+    }
+}
+""".trim()
+        }
+
+        new File(mainResDir, "input.txt").createNewFile()
+        new File(testResDir, "input-test.txt").createNewFile()
+
+        println "AoC day ${day} scaffolding generated."
+    }
+}
+
